@@ -1,0 +1,7 @@
+[%%input-授業回数%%-%%input-課題番号%%]
+%%input-問題文%%
+
+[解答]
+%%add-source_code%%
+%%add-run_result%%
+%%add-other_ans%%

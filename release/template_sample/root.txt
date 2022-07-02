@@ -1,0 +1,11 @@
+フォーマットテンプレートサンプル
+
+%%class_name%%(第%%input-授業回数%%回)(%%input-日付%%提出)
+
+%%student_id%% %%student_name%%
+
+%%add-probrem%%
+
+
+------------------------
+%%student_id%% %%student_name%%
