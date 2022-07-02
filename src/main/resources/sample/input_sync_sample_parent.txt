@@ -1,0 +1,2 @@
+上の階層の入力ボックス %%input-同期サンプル2%%
+%%input_sync_sample_child%%
