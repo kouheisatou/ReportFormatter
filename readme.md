@@ -5,4 +5,4 @@
 ```shell
 ./gradlew run
 ```
-jdk-18 Required.
+jdk-17 Required.
