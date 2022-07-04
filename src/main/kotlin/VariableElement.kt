@@ -1,8 +1,5 @@
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.mouseClickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -35,6 +32,7 @@ open class VariableElement(
         var active by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
+                .fillMaxWidth()
                 .border(width = if(active) 2.dp else 1.dp, if(active) Color.Black else Color.Gray, shape = RoundedCornerShape(4.dp))
                 .padding(5.dp)
                 .onPointerEvent(PointerEventType.Enter){ active = true }
@@ -54,7 +52,10 @@ open class VariableElement(
                 val textsInLine = l.replace("\n", "").split("%%")
                 val elementsInLine = mutableListOf<Element>()
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     for(t in textsInLine.withIndex()){
                         if(t.value == "") continue
                         if(t.index % 2 == 0){

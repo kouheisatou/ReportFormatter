@@ -1,12 +1,10 @@
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -15,8 +13,9 @@ import java.awt.FileDialog
 import java.awt.Frame
 
 lateinit var rootElement: RootElement
-lateinit var resultText: MutableState<String>
+var resultText: MutableState<String> = mutableStateOf("")
 lateinit var resourceManager: ResourceManager
+var initWindowWidth: Int? = null
 
 fun main() = application {
 
@@ -54,9 +53,20 @@ fun main() = application {
             }
         }
 
+        if(initWindowWidth == null){
+            initWindowWidth = window.width
+        }
+
         Row{
-            Box() {
-                LazyColumn() {
+
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .horizontalScroll(rememberScrollState()),
+            ){
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     items(1) {
                         rootElement = RootElement(openedFileName)
                         rootElement.extractView()
@@ -75,7 +85,7 @@ fun main() = application {
                 value = resultText.value,
                 onValueChange = { resultText.value = it },
                 readOnly = true,
-                modifier = Modifier.fillMaxHeight().fillMaxWidth()
+                modifier = Modifier.weight(1f)
             )
         }
 
