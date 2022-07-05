@@ -28,7 +28,11 @@ open class VariableElement(
 
     final override fun genChildren(){
 
-        val lines = resourceManager.getResource(resourcePath)
+        val lines = try{
+            resourceManager.getResource(resourcePath)
+        }catch (e: Exception){
+            throw Exception("this variable name does not exist : %%$elementName%%")
+        }
 
         for(l in lines){
 

@@ -16,6 +16,7 @@ lateinit var rootElement: RootElement
 var resultText: MutableState<String> = mutableStateOf("")
 lateinit var resourceManager: ResourceManager
 
+@OptIn(ExperimentalMaterialApi::class)
 fun main() = application {
 
     // カレントディレクトリ設定
@@ -27,34 +28,77 @@ fun main() = application {
     ) {
         // RootElement名設定
         var openedFileName by remember { mutableStateOf("tutorial") }
+        var errMsg by remember { mutableStateOf<String?>(null) }
+        var filePickerState by remember { mutableStateOf(false) }
 
-        var openTemplate by remember { mutableStateOf(false) }
+        // err msg dialog
+        if(errMsg != null){
+            AlertDialog(
+                modifier = Modifier.width((window.width*4/7).dp),
+                onDismissRequest = {   },
+                title = {
+                    Text(text = "error")
+                },
+                text = {
+                    Text(errMsg ?: "")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { // confirmをタップしたとき
+                            errMsg = null
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = null
+            )
+        }
+
+        if(filePickerState){
+            AwtWindow(
+                create = {
+                    object : FileDialog(Frame(), "Choose a root file", LOAD) {
+                        override fun setVisible(value: Boolean) {
+                            super.setVisible(value)
+
+                            val prevResourceManager = resourceManager
+                            val prevRootElement = rootElement
+
+                            if (value) {
+                                openedFileName = if(file.matches(Regex(".+\\.txt"))){
+                                    file.subSequence(0 .. file.length -5).toString()
+                                }else{
+                                    errMsg = "permitted .txt file only"
+                                    resourceManager = prevResourceManager
+                                    rootElement = prevRootElement
+                                    filePickerState = false
+                                    return
+                                }
+                                println(openedFileName)
+                                try {
+                                    resourceManager = ResourceManager(directory ?: return)
+                                    rootElement = RootElement(openedFileName)
+                                }catch (e: Exception){
+                                    errMsg = e.message
+                                    resourceManager = prevResourceManager
+                                    rootElement = prevRootElement
+                                    filePickerState = false
+                                }
+                            }
+                            filePickerState = false
+                        }
+                    }
+                },
+                dispose = FileDialog::dispose,
+            )
+        }
+
         MenuBar {
             Menu("ファイル", mnemonic = 'F') {
                 Item("テンプレートを開く", onClick = {
-                    openTemplate = true
+                    filePickerState = true
                 })
-                if(openTemplate){
-                    openFileDialog(
-                        onCloseRequest = { directory, filename ->
-                            openedFileName = if(filename.matches(Regex(".+\\.txt"))){
-                                filename.subSequence(0 .. filename.length -5).toString()
-                            }else{
-                                return@openFileDialog
-                            }
-                            println(openedFileName)
-
-                            val prevResourceManager = resourceManager
-                            try {
-                                resourceManager = ResourceManager(directory ?: return@openFileDialog)
-                                rootElement = RootElement(openedFileName)
-                            }catch (e: Exception){
-                                println("template file error")
-                                resourceManager = prevResourceManager
-                            }
-                        }
-                    )
-                }
             }
         }
 
@@ -77,7 +121,6 @@ fun main() = application {
                 ) {
                     items(1) {
                         rootElement.extractView()
-                        openTemplate = false
                     }
                 }
             }
@@ -99,23 +142,3 @@ fun main() = application {
     }
 
 }
-
-
-
-@Composable
-private fun openFileDialog(
-    parent: Frame? = null,
-    onCloseRequest: (directory: String?, filename: String) -> Unit
-) = AwtWindow(
-    create = {
-        object : FileDialog(parent, "Choose a root file", LOAD) {
-            override fun setVisible(value: Boolean) {
-                super.setVisible(value)
-                if (value) {
-                    onCloseRequest(directory, file)
-                }
-            }
-        }
-    },
-    dispose = FileDialog::dispose
-)
