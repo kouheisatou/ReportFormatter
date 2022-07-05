@@ -28,6 +28,15 @@ class AddCommandElement(
     parentElement,
 ){
     private val targetElementName = elementName.split("-")[1]
+
+    init {
+        genChildren()
+    }
+
+    override fun genChildren() {
+        VariableElement(targetElementName, this@AddCommandElement)
+    }
+
     @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun extractView(): Element {
@@ -47,7 +56,6 @@ class AddCommandElement(
                 Spacer(modifier = Modifier.height(5.dp))
             }
             Row(
-//                modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(

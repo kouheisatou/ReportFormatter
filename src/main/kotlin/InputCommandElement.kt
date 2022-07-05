@@ -11,7 +11,7 @@ class InputCommandElement(
     parentElement,
 ){
     val defaultText = elementName.split("-")[1]
-    lateinit var inputText: MutableState<TextFieldValue>
+    var inputText: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
 
     @Composable
     override fun extractView(): Element {

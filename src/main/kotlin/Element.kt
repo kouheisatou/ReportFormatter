@@ -43,6 +43,8 @@ abstract class Element(val elementName: String, val parentElement: Element?) {
         }
     }
 
+    open fun genChildren(){}
+
     override fun toString(): String {
         return "$elementName{$elements}"
     }
