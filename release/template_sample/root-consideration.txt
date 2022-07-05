@@ -1,0 +1,9 @@
+第%%input-授業回数%%回授業
+
+【考察】
+%%add-consideration/consideration%%
+
+【感想】
+%%add-consideration/thoughts%%
+
+%%student_id%% %%student_name%%

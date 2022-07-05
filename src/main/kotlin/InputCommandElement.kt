@@ -30,7 +30,6 @@ class InputCommandElement(
                 }
                 // 結果ウィンドウを更新
                 resultText.value = rootElement.exportToText()
-                // 何故かこれなしでも自動更新される？？
             },
             label = { Text(defaultText) }
         )
