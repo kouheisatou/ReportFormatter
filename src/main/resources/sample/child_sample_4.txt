@@ -1,1 +1,1 @@
-ファイル内で%%child_child_sample_1%%さらに%%child_child_sample_2%%を読み込む
+ファイルの%%child_child_sample_1%%さらに%%child_child_sample_2%%を読み込む

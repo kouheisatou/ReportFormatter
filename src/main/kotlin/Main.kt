@@ -15,7 +15,6 @@ import java.awt.Frame
 lateinit var rootElement: RootElement
 var resultText: MutableState<String> = mutableStateOf("")
 lateinit var resourceManager: ResourceManager
-var initWindowWidth: Int? = null
 
 fun main() = application {
 
@@ -45,16 +44,25 @@ fun main() = application {
                             }
                             println(openedFileName)
 
-                            rootElement = RootElement(openedFileName)
-                            resourceManager = ResourceManager(directory ?: return@openFileDialog)
+                            val prevResourceManager = resourceManager
+                            try {
+                                resourceManager = ResourceManager(directory ?: return@openFileDialog)
+                                rootElement = RootElement(openedFileName)
+                            }catch (e: Exception){
+                                println("template file error")
+                                resourceManager = prevResourceManager
+                            }
                         }
                     )
                 }
             }
         }
 
-        if(initWindowWidth == null){
-            initWindowWidth = window.width
+
+        try{
+            rootElement = RootElement(openedFileName)
+        }catch (e: Exception){
+            println("template file error")
         }
 
         Row{
@@ -68,7 +76,6 @@ fun main() = application {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(1) {
-                        rootElement = RootElement(openedFileName)
                         rootElement.extractView()
                         openTemplate = false
                     }

@@ -22,12 +22,42 @@ open class VariableElement(
 ) {
     protected open val resourcePath = "$elementName.txt"
 
+    init {
+        genChildren()
+    }
+
+    final override fun genChildren(){
+
+        val lines = resourceManager.getResource(resourcePath)
+
+        for(l in lines){
+
+            val textsInLine = l.replace("\n", "").split("%%")
+            val elementsInLine = mutableListOf<Element>()
+
+            for(t in textsInLine.withIndex()){
+                if(t.index % 2 == 0){
+                    elementsInLine.add(TextElement(t.value, this@VariableElement))
+                }else{
+                    when{
+                        // 予約語
+                        // 引数は-の後に渡される
+                        t.value.matches(Regex("^input-.*")) -> elementsInLine.add(InputCommandElement(t.value, this@VariableElement))
+                        t.value.matches(Regex("^add-.*")) -> elementsInLine.add(AddCommandElement(t.value, this@VariableElement))
+                        // 予約語以外は通常の変数名として扱う
+                        else -> elementsInLine.add(VariableElement(t.value, this@VariableElement))
+                    }
+                }
+            }
+
+            elements.add(elementsInLine)
+        }
+    }
+
     @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
     @Composable
     override fun extractView(): Element {
         println("extract : $elementName")
-
-        val lines = resourceManager.getResource(resourcePath)
 
         var active by remember { mutableStateOf(false) }
         Column(
@@ -47,57 +77,42 @@ open class VariableElement(
                 color = Color.LightGray
             )
 
-            for(l in lines){
+            for(row in elements){
 
-                val textsInLine = l.replace("\n", "").split("%%")
-                val elementsInLine = mutableListOf<Element>()
+                Spacer(modifier = Modifier.height(5.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    for(t in textsInLine.withIndex()){
-                        if(t.value == "") continue
-                        if(t.index % 2 == 0){
-                            elementsInLine.add(TextElement(t.value, this@VariableElement).extractView())
-                        }else{
-                            when{
-                                // 予約語
-                                // 引数は-の後に渡される
-                                t.value.matches(Regex("^input-.*")) -> {
-                                    val newElement = InputCommandElement(t.value, this@VariableElement).extractView() as InputCommandElement
+                    for(e in row){
+                        e.extractView()
 
-                                    // InputCommandElementで同じ引数のInputCommandElementを子として持つElementが出てくるまで親をたどる
-                                    var inputSyncDestinationParent = parentElement
-                                    var inputSyncDestination: InputCommandElement? = null
-                                    while (true){
-                                        for(row in inputSyncDestinationParent?.elements ?: mutableListOf()){
-                                            for(e in row){
-                                                if(e is InputCommandElement){
-                                                    if(e.defaultText == newElement.defaultText){
-                                                        inputSyncDestination = e
-                                                        break
-                                                    }
-                                                }
+                        if(e is InputCommandElement){
+                            // InputCommandElementで同じ引数のInputCommandElementを子として持つElementが出てくるまで親をたどる
+                            var inputSyncDestinationParent = parentElement
+                            var inputSyncDestination: InputCommandElement? = null
+                            while (true){
+                                for(parentRow in inputSyncDestinationParent?.elements ?: mutableListOf()){
+                                    for(pe in parentRow){
+                                        if(pe is InputCommandElement){
+                                            if(pe.defaultText == e.defaultText){
+                                                inputSyncDestination = pe
+                                                break
                                             }
                                         }
-                                        inputSyncDestinationParent = inputSyncDestinationParent?.parentElement ?: break
                                     }
-                                    newElement.inputText.value = inputSyncDestination?.inputText?.value ?: newElement.inputText.value
-
-                                    elementsInLine.add(newElement)
                                 }
-                                t.value.matches(Regex("^add-.*")) -> elementsInLine.add(AddCommandElement(t.value, this@VariableElement).extractView())
-                                // 予約語以外は通常の変数名として扱う
-                                else -> elementsInLine.add(VariableElement(t.value, this@VariableElement).extractView())
+                                inputSyncDestinationParent = inputSyncDestinationParent?.parentElement ?: break
                             }
+                            e.inputText.value = inputSyncDestination?.inputText?.value ?: e.inputText.value
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(5.dp))
-                elements.add(elementsInLine)
-                resultText.value = rootElement.exportToText()
             }
+
+            resultText.value = rootElement.exportToText()
+
         }
         return this
     }

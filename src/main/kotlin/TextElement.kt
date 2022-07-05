@@ -8,6 +8,7 @@ class TextElement(
     elementName,
     parentElement,
 ) {
+
     @Composable
     override fun extractView(): Element {
         Text(elementName)
