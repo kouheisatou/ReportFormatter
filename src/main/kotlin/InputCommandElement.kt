@@ -28,8 +28,6 @@ class InputCommandElement(
                         }
                     }
                 }
-                // 結果ウィンドウを更新
-                resultText.value = rootElement.exportToText()
             },
             label = { Text(defaultText) }
         )
