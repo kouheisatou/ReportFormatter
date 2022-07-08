@@ -171,14 +171,6 @@ fun main() = application {
                     .weight(2f)
                     .horizontalScroll(rememberScrollState()),
             ){
-//                LazyColumn(
-//                    modifier = Modifier.fillMaxWidth()
-//                ) {
-//                    items(1) {
-//                        rootElement?.extractView()
-//                        resultText.value = rootElement?.exportToText() ?: ""
-//                    }
-//                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
