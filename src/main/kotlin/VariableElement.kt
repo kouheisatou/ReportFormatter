@@ -4,14 +4,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.*
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import java.io.BufferedReader
-import java.io.FileReader
 
 /**
  * @param text nullを渡すと自動的に$ElementName.txtを読み込む。文字列を渡すとその文字列をElementに展開する
@@ -55,6 +50,7 @@ open class VariableElement(
                     when{
                         // 予約語
                         // 引数は-の後に渡される
+                        t.value.matches(Regex("^input-.*-.*")) -> elementsInLine.add(InputCommandElement(t.value, this, t.value.split("-")[2]))
                         t.value.matches(Regex("^input-.*")) -> elementsInLine.add(InputCommandElement(t.value, this))
                         t.value.matches(Regex("^add-.*")) -> elementsInLine.add(AddCommandElement(t.value, this))
                         // 予約語以外は通常の変数名として扱う
@@ -111,7 +107,7 @@ open class VariableElement(
                                 for(parentRow in inputSyncDestinationParent?.elements ?: mutableListOf()){
                                     for(pe in parentRow){
                                         if(pe is InputCommandElement){
-                                            if(pe.defaultText == e.defaultText){
+                                            if(pe.hint == e.hint){
                                                 inputSyncDestination = pe
                                                 break
                                             }

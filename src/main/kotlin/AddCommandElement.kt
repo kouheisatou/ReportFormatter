@@ -33,17 +33,11 @@ class AddCommandElement(
         VariableElement(targetElementName, this@AddCommandElement)
     }
 
-    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun extractView(): Element {
 
-        var active by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
-//                .onPointerEvent(PointerEventType.Enter){ active = true }
-//                .onPointerEvent(PointerEventType.Move){ active = true }
-//                .onPointerEvent(PointerEventType.Exit){ active = false }
-//                .border(width = if(active) 2.dp else 1.dp, if(active) Color.Black else Color.Gray, shape = RoundedCornerShape(4.dp))
                 .border(width = 1.dp, Color.Gray, shape = RoundedCornerShape(4.dp))
                 .padding(5.dp)
         ) {

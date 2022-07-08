@@ -46,7 +46,6 @@ fun main() = application {
         // auto save
         var autoSaveSettingDialog by remember { mutableStateOf(false) }
         var enabledAutoSave by remember { mutableStateOf(false) }
-        var autoSaveFilePath by remember { mutableStateOf<String?>(null) }
 
         // init result area
         resultText = remember { mutableStateOf("") }
@@ -93,7 +92,6 @@ fun main() = application {
                         filePickerState = null
                         return@FilePicker
                     }
-                    println(openedFileName)
                     try {
                         resourceManager = ResourceManager(dir)
                         rootElement = null
@@ -126,7 +124,7 @@ fun main() = application {
                     Text(text = "上書き確認")
                 },
                 text = {
-                    Text("$autoSaveFilePath はすでに存在します。上書きしますか？")
+                    Text("${autoSaveFilenameElement?.exportToText()} はすでに存在します。上書きしますか？")
                 },
                 confirmButton = {
                     TextButton(
@@ -141,7 +139,6 @@ fun main() = application {
                 dismissButton = {
                     TextButton(onClick = {
                         overwriteConfirmationDialogState = false
-                        autoSaveFilePath = null
                     }){
                         Text("キャンセル")
                     }
@@ -153,7 +150,13 @@ fun main() = application {
         try{
             if(rootElement == null){
                 rootElement = VariableElement(openedFileName, null)
-                autoSaveFilenameElement = VariableElement("filename", null, rootElement!!.elementName + ".txt", outLine = false, nameTag = false)
+                println("open : $openedFileName")
+                autoSaveFilenameElement = VariableElement(
+                    "filename",
+                    null,
+                    "%%input-保存ディレクトリ-${System.getProperty("user.home")}/Desktop%%/${rootElement!!.elementName}.txt",
+                    outLine = false,
+                    nameTag = false)
                 enabledAutoSave = false
             }
         }catch (e: Exception){
@@ -192,14 +195,19 @@ fun main() = application {
         }
 
         // auto save
-        if(enabledAutoSave){
-            val file = File(autoSaveFilePath!!)
-            file.writeText(resultText.value)
-            println("save : ${file.path}")
+        if(enabledAutoSave && autoSaveFilenameElement != null){
+            try{
+                val file = File(autoSaveFilenameElement!!.exportToText())
+                file.writeText(resultText.value)
+                println("save : ${file.path}")
+            }catch (e: Exception){
+                errMsg = "invalid auto save file path"
+                enabledAutoSave = false
+            }
         }
 
         // auto save setting dialog
-        if(autoSaveSettingDialog && rootElement != null){
+        if(autoSaveSettingDialog && rootElement != null && autoSaveFilenameElement != null){
 
             AlertDialog(
 
@@ -228,8 +236,7 @@ fun main() = application {
                                 checked = enabledAutoSave,
                                 onCheckedChange = {
                                     if(it){
-                                        autoSaveFilePath = "${System.getProperty("user.home")}/Desktop/${autoSaveFilenameElement!!.exportToText()}"
-                                        val file = File(autoSaveFilePath!!)
+                                        val file = File(autoSaveFilenameElement!!.exportToText())
                                         if(file.exists()){
                                             overwriteConfirmationDialogState = true
                                         }else{
@@ -237,7 +244,6 @@ fun main() = application {
                                         }
                                     }else{
                                         enabledAutoSave = false
-                                        autoSaveFilePath = null
                                     }
                                 }
                             )

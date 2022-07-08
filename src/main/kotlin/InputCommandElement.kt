@@ -6,16 +6,17 @@ import androidx.compose.ui.text.input.TextFieldValue
 class InputCommandElement(
     elementName: String,
     parentElement: Element?,
+    private val defaultText: String = ""
 ) : Element(
     elementName,
     parentElement,
 ){
-    val defaultText = elementName.split("-")[1]
-    var inputText: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
+    val hint = elementName.split("-")[1]
+    var inputText: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(defaultText))
 
     @Composable
     override fun extractView(): Element {
-        inputText = remember { mutableStateOf(TextFieldValue()) }
+        inputText = remember { mutableStateOf(TextFieldValue(inputText.value.text)) }
         TextField(
             value = inputText.value,
             onValueChange = {
@@ -23,21 +24,22 @@ class InputCommandElement(
                 // 同じ引数を持つ子要素のtextを全て同期するように更新
                 parentElement?.applyAllChildren { e: Element ->
                     if(e is InputCommandElement){
-                        if(e.defaultText == this.defaultText){
+                        if(e.hint == this.hint){
                             e.inputText.value = it
                         }
                     }
                 }
             },
-            label = { Text(defaultText) }
+            label = { Text(hint) }
         )
         return this
     }
 
     override fun exportToText(): String {
-        // なぜかダイアログ表示直後に空文字が返る
-        // rootElementから全体にexportElement()したときに空文字が返る
-        // inputTextの内容がexportElement()の直前にリセットされて空文字になっている
         return inputText.value.text
+    }
+
+    override fun toString(): String {
+        return "${this.javaClass}{${inputText.value.text}}"
     }
 }
