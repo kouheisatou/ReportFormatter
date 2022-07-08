@@ -43,7 +43,7 @@ class AddCommandElement(
         ) {
             var addCount by remember { mutableStateOf (0) }
             repeat(addCount){
-                elements.add(mutableListOf(VariableElement(targetElementName, this@AddCommandElement).extractView()))
+                elements[it][0].extractView()
                 Spacer(modifier = Modifier.height(5.dp))
             }
             Row(
@@ -56,6 +56,7 @@ class AddCommandElement(
                         disabledContentColor = Color.White,
                     ),
                     onClick = {
+                        elements.add(mutableListOf(VariableElement(targetElementName, this@AddCommandElement)))
                         addCount++
                     }){
                     Text(elementName)
