@@ -13,26 +13,35 @@ import androidx.compose.ui.unit.dp
 import java.io.BufferedReader
 import java.io.FileReader
 
+/**
+ * @param text nullを渡すと自動的に$ElementName.txtを読み込む。文字列を渡すとその文字列をElementに展開する
+ * @param outLine 枠線をつけるかどうか
+ * @param nameTag Element名を表示するか否か
+ */
 open class VariableElement(
     elementName: String,
     parentElement: Element?,
+    text: String? = null,
+    private val outLine: Boolean = true,
+    private val nameTag: Boolean = true
 ) : Element(
     elementName,
     parentElement,
 ) {
-    protected open val resourcePath = "$elementName.txt"
+    private val resourcePath: String = "$elementName.txt"
 
     init {
-        genChildren()
+        val lines = text?.split("\n")
+            ?: try{
+                resourceManager.getResource(resourcePath)
+            }catch (e: Exception){
+                throw Exception("this variable name does not exist : %%$elementName%%")
+            }
+
+        genChildren(lines)
     }
 
-    final override fun genChildren(){
-
-        val lines = try{
-            resourceManager.getResource(resourcePath)
-        }catch (e: Exception){
-            throw Exception("this variable name does not exist : %%$elementName%%")
-        }
+    private fun genChildren(lines: List<String>){
 
         for(l in lines){
 
@@ -41,15 +50,15 @@ open class VariableElement(
 
             for(t in textsInLine.withIndex()){
                 if(t.index % 2 == 0){
-                    elementsInLine.add(TextElement(t.value, this@VariableElement))
+                    elementsInLine.add(TextElement(t.value, this))
                 }else{
                     when{
                         // 予約語
                         // 引数は-の後に渡される
-                        t.value.matches(Regex("^input-.*")) -> elementsInLine.add(InputCommandElement(t.value, this@VariableElement))
-                        t.value.matches(Regex("^add-.*")) -> elementsInLine.add(AddCommandElement(t.value, this@VariableElement))
+                        t.value.matches(Regex("^input-.*")) -> elementsInLine.add(InputCommandElement(t.value, this))
+                        t.value.matches(Regex("^add-.*")) -> elementsInLine.add(AddCommandElement(t.value, this))
                         // 予約語以外は通常の変数名として扱う
-                        else -> elementsInLine.add(VariableElement(t.value, this@VariableElement))
+                        else -> elementsInLine.add(VariableElement(t.value, this))
                     }
                 }
             }
@@ -58,28 +67,30 @@ open class VariableElement(
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
     @Composable
     override fun extractView(): Element {
-        println("extract : $elementName")
 
-        var active by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(width = if(active) 2.dp else 1.dp, if(active) Color.Black else Color.Gray, shape = RoundedCornerShape(4.dp))
+        val modifier = if(outLine){
+            Modifier
+                .border(width = 1.dp, Color.Gray, shape = RoundedCornerShape(4.dp))
                 .padding(5.dp)
-                .onPointerEvent(PointerEventType.Enter){ active = true }
-                .onPointerEvent(PointerEventType.Move){ active = true }
-                .onPointerEvent(PointerEventType.Exit){ active = false }
+                .fillMaxWidth()
+        }else{
+            Modifier.fillMaxWidth()
+        }
+
+        Column(
+            modifier = modifier
         ) {
-            Text(
-                text = resourcePath,
-                modifier = Modifier
-                    .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
-                    .padding(2.dp),
-                color = Color.LightGray
-            )
+            if(nameTag){
+                Text(
+                    text = resourcePath,
+                    modifier = Modifier
+                        .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
+                        .padding(2.dp),
+                    color = Color.LightGray
+                )
+            }
 
             for(row in elements){
 
@@ -114,9 +125,6 @@ open class VariableElement(
                     }
                 }
             }
-
-            resultText.value = rootElement.exportToText()
-
         }
         return this
     }

@@ -3,11 +3,6 @@ import androidx.compose.runtime.Composable
 abstract class Element(val elementName: String, val parentElement: Element?) {
 
     val elements = mutableListOf<MutableList<Element>>()
-    val id: Long = componentCount
-
-    init {
-        componentCount ++
-    }
 
     @Composable
     abstract fun extractView(): Element
@@ -25,15 +20,6 @@ abstract class Element(val elementName: String, val parentElement: Element?) {
         return result
     }
 
-    override fun equals(other: Any?): Boolean {
-        if(other is Element){
-            if(other.id == this.id){
-                return true
-            }
-        }
-        return false
-    }
-
     open fun applyAllChildren(applyToChild: (child: Element) -> Unit){
         for(row in elements){
             for(e in row){
@@ -42,8 +28,6 @@ abstract class Element(val elementName: String, val parentElement: Element?) {
             }
         }
     }
-
-    open fun genChildren(){}
 
     override fun toString(): String {
         return "$elementName{$elements}"

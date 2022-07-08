@@ -35,6 +35,9 @@ class InputCommandElement(
     }
 
     override fun exportToText(): String {
+        // なぜかダイアログ表示直後に空文字が返る
+        // rootElementから全体にexportElement()したときに空文字が返る
+        // inputTextの内容がexportElement()の直前にリセットされて空文字になっている
         return inputText.value.text
     }
 }
