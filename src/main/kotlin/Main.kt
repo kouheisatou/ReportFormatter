@@ -21,10 +21,14 @@ import java.awt.Frame
 import java.io.File
 
 
-var rootElement: Element? = null
 var resultText: MutableState<String> = mutableStateOf("")
+var rootElement: Element? = null
 lateinit var resourceManager: ResourceManager
 private var autoSaveFilenameElement: Element? = null
+
+private var prevRootElement: Element? = null
+private var prevAutoSaveFileNameElement: Element? = null
+private lateinit var prevResourceManager: ResourceManager
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -80,8 +84,9 @@ fun main() = application {
 
                 FilePicker("choose a root template file", filePickerState!!) { dir, file ->
 
-                    val prevResourceManager = resourceManager
-                    val prevRootElement = rootElement
+                    prevResourceManager = resourceManager
+                    prevRootElement = rootElement
+                    prevAutoSaveFileNameElement = autoSaveFilenameElement
 
                     openedFileName = if (file.matches(Regex(".+\\.txt"))) {
                         file.subSequence(0..file.length - 5).toString()
@@ -89,6 +94,7 @@ fun main() = application {
                         errMsg = "permitted .txt file only"
                         resourceManager = prevResourceManager
                         rootElement = prevRootElement
+                        autoSaveFilenameElement = prevAutoSaveFileNameElement
                         filePickerState = null
                         return@FilePicker
                     }
@@ -99,6 +105,7 @@ fun main() = application {
                         errMsg = e.message
                         resourceManager = prevResourceManager
                         rootElement = prevRootElement
+                        autoSaveFilenameElement = prevAutoSaveFileNameElement
                         filePickerState = null
                     }
 
@@ -154,13 +161,17 @@ fun main() = application {
                 autoSaveFilenameElement = VariableElement(
                     "filename",
                     null,
-                    "%%input-保存ディレクトリ-${System.getProperty("user.home")}/Desktop%%/${rootElement!!.elementName}.txt",
+                    "%%input-保存ディレクトリ-${System.getProperty("user.home")}%%/${rootElement!!.elementName}.txt",
                     outLine = false,
                     nameTag = false)
                 enabledAutoSave = false
             }
         }catch (e: Exception){
             println("template file error")
+            rootElement = prevRootElement
+            autoSaveFilenameElement = prevAutoSaveFileNameElement
+            resourceManager = prevResourceManager
+            errMsg = e.message
         }
 
         // extract view
