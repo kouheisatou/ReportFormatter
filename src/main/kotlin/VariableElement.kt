@@ -30,7 +30,8 @@ open class VariableElement(
             ?: try{
                 resourceManager.getResource(resourcePath)
             }catch (e: Exception){
-                throw Exception("this variable name does not exist : %%$elementName%%")
+                e.printStackTrace()
+                throw Exception("this variable name does not exist : %%$elementName%%\ncalled from ${parentElement?.elementName ?: "root"}.txt")
             }
 
         genChildren(lines)

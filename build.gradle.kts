@@ -34,7 +34,8 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
             packageName = "TemplateFormatter"
-            packageVersion = "1.0.5"
+            packageVersion = "1.0.6"
+            copyright = "Kohei Sato"
         }
     }
 }
